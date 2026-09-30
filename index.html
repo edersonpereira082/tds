@@ -816,12 +816,18 @@ function speak(turns,{onend}={}){
       a.onloadedmetadata=()=>setGuard((a.duration||8)*1000+3000);
       a.onended=()=>{ if(over) return; over=true; adv(); };
       setGuard(a.readyState>=1 && a.duration ? a.duration*1000+3000 : 15000);   // já carregado: usa a duração real (senão frases longas eram cortadas e as vozes se misturavam)
-      try{ a.currentTime=0 }catch(_){}
-      const p=a.play(); if(p&&p.catch) p.catch(fail);
+      const startPlay=()=>{ if(over||my!==speakToken) return; setStatus(SHORT[w]+" falando…"); setGuard((a.duration||8)*1000+3000); try{ a.currentTime=0 }catch(_){} const p=a.play(); if(p&&p.catch) p.catch(fail); };
+      if(a.readyState>=4) startPlay();                            // só toca com o áudio já carregado por inteiro (evita voz "tremida" na internet)
+      else { let d=false; const go2=()=>{ if(d) return; d=true; clearTimeout(tw); a.removeEventListener("canplaythrough",go2); startPlay(); }; const tw=setTimeout(go2,8000); a.addEventListener("canplaythrough",go2); setStatus("Carregando a voz…"); }
       if(items[i]) getClip(items[i].w,items[i].s);                // pré-carrega a próxima frase
     } else browserVoice();
   };
   setTimeout(next,60);
+}
+/* Baixa antes os áudios do slide atual e do próximo, para não haver espera nem falhas na internet */
+function preloadSlide(i){
+  if(i<0||i>=slides.length) return;
+  try{ NARR[idOf(i)]().forEach(([w,t])=>splitParts(t).forEach(s=>getClip(w,s))); }catch(_){}
 }
 function say(turns,{mood="happy",onend}={}){ setMood(mood); speak(turns,{onend}); }
 
@@ -860,6 +866,7 @@ function go(i,quiet){
   $("#next").style.visibility=cur===slides.length-1?"hidden":"visible";
   const id=idOf(cur);
   if(id==="fim"){ renderInfo(); if(started) setTimeout(confetti,600); }
+  preloadSlide(cur); setTimeout(()=>preloadSlide(cur+1),1200);
   if(!quiet) narrate();
 }
 $("#prev").onclick=()=>{ stopAuto(); go(cur-1) };
