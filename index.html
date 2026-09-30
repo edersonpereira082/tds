@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marquês e Aura apresentam: Técnico em Desenvolvimento de Sistemas Integrado</title>
+<style>
+  :root{
+    --bg:#f3f6fd; --ink:#0f172a; --muted:#475569; --line:#d5dcf0; --card:#ffffff;
+    --blue:#1d4ed8; --blue-soft:#e6eeff; --purple:#6d28d9; --green:#047857;
+    --amber:#b45309; --amber-soft:#fff4d6; --navy:#0b1b45; --gold:#f5b301;
+    --dock-w:clamp(290px,28vw,450px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:clamp(14px,.55vw + .85vh + 4px,24px)}
+  html,body{height:100%;overflow:hidden}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);display:flex;line-height:1.45}
+  button,select{font-family:inherit;cursor:pointer}
+  a{color:var(--blue);font-weight:600}
+  :focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
+  .serif{font-family:Georgia,"Palatino Linotype",serif}
+
+  /* ===== PALCO ===== */
+  .stage{position:relative;flex:1;min-width:0;height:100%;background:
+      radial-gradient(#c9d5f2 1.2px,transparent 1.3px) 0 0/24px 24px,
+      radial-gradient(60rem 30rem at 100% 0,#dbe6ff,transparent 60%),
+      radial-gradient(40rem 25rem at 0 100%,#e9ddff,transparent 60%),var(--bg)}
+  .progress{position:absolute;top:0;left:0;height:6px;background:linear-gradient(90deg,var(--blue),var(--purple));z-index:5;transition:width .4s}
+  .deck{position:absolute;inset:0}
+  .slide{position:absolute;inset:0;padding:2.2rem 3rem 5.6rem;display:flex;flex-direction:column;justify-content:center;
+    overflow-y:auto;opacity:0;visibility:hidden;transform:translateX(30px);transition:opacity .4s,transform .4s,visibility .4s}
+  .slide.active{opacity:1;visibility:visible;transform:none}
+  .slide.past{transform:translateX(-30px)}
+  .slide.active .grid>*,.slide.active .path>.card,.slide.active .steps>*{animation:rise .55s both}
+  .slide.active .grid>*:nth-child(2),.slide.active .path>.card:nth-of-type(2),.slide.active .steps>*:nth-child(2){animation-delay:.12s}
+  .slide.active .grid>*:nth-child(3),.slide.active .path>.card:nth-of-type(3),.slide.active .steps>*:nth-child(3){animation-delay:.24s}
+  .slide.active .grid>*:nth-child(4),.slide.active .path>.card:nth-of-type(4),.slide.active .steps>*:nth-child(4){animation-delay:.36s}
+  .slide.active .grid>*:nth-child(5),.slide.active .steps>*:nth-child(5){animation-delay:.48s}.slide.active .grid>*:nth-child(6){animation-delay:.6s}
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}}
+
+  .kicker{font-size:.95rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:.4rem}
+  h1{font-size:clamp(1.9rem,3.3vw,3rem);line-height:1.1;font-weight:900;margin-bottom:.7rem;color:var(--navy);overflow-wrap:anywhere}
+  h2{font-size:clamp(1.6rem,2.6vw,2.35rem);line-height:1.15;font-weight:900;margin-bottom:.9rem;color:var(--navy)}
+  .hl{color:var(--blue)}
+  .lead{font-size:1.3rem;color:#1e293b;max-width:48ch;line-height:1.5}
+  .grid{display:grid;gap:1rem}
+  .g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:1.1rem;padding:1.1rem 1.3rem;box-shadow:0 6px 18px #1e3a8a14}
+  .card .ico{font-size:2.3rem;line-height:1;margin-bottom:.4rem}
+  .card h3{font-size:1.3rem;font-weight:800;margin-bottom:.3rem;color:var(--navy)}
+  .card p,.card li{font-size:1.08rem;color:#1e293b}
+  .card ul{padding-left:1.2rem;display:grid;gap:.3rem}
+  .card.hero{border-color:var(--blue);background:var(--blue-soft)}
+  .tag{display:inline-block;padding:.2em .75em;border-radius:99px;background:var(--blue-soft);color:#1e3a8a;font-weight:700;font-size:1rem;margin:.2rem .3rem .2rem 0;border:1px solid #b7c9f7}
+  .tag.p{background:#ede9fe;color:#4c1d95;border-color:#c9bdf5}
+  .tag.g{background:#fff4d6;color:#5a3b03;border-color:#f5c76b}
+  .big{font-size:2.6rem;font-weight:900;color:var(--blue);line-height:1.1}
+  .note{font-size:1rem;color:var(--muted);margin-top:1rem}
+  .source{font-size:.85rem;color:var(--muted);margin-top:1rem}
+  .ok{color:var(--green);font-weight:800}.warn{color:var(--amber);font-weight:800}
+  .path{display:flex;align-items:stretch;gap:.7rem}
+  .path .card{flex:1;min-width:0;text-align:center;padding:.9rem .6rem}
+  .path .big{font-size:2rem}
+  .path .arr{align-self:center;font-size:1.8rem;color:var(--blue);font-weight:900}
+  kbd{background:#fff;border:2px solid var(--line);border-bottom-width:4px;border-radius:6px;padding:0 .4em;font-size:.9em}
+  .strip{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
+  .strip span{background:#fff;border:2px solid var(--line);border-radius:99px;padding:.25em .9em;font-weight:700;font-size:1.05rem}
+
+  /* Capa com o robô em destaque */
+  .cover{flex-direction:row;align-items:center;gap:2.5rem}
+  .duo2{display:flex;gap:1.2rem;flex:none}
+  .cover .stagebot{position:relative;flex:none;display:grid;place-items:center;width:min(10.5rem,15vw);aspect-ratio:1}
+  .duo2 .stagebot:nth-child(2):before{animation-delay:-2s}
+  .cover .stagebot:before{content:"";position:absolute;inset:-6%;border-radius:50%;background:
+      radial-gradient(circle,#ffffff 0,#dbe6ff 40%,#c7b8ff88 62%,transparent 72%);animation:halo 4s ease-in-out infinite}
+  .cover .stagebot:after{content:"";position:absolute;inset:0;border-radius:50%;border:3px dashed #1d4ed855;animation:spin 30s linear infinite}
+  .cover .stagebot .bot{--s:100%;position:relative;z-index:2;cursor:pointer}
+  @keyframes halo{50%{transform:scale(1.06);opacity:.85}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .cover .txt{flex:1;min-width:0}
+  .name{font-family:Georgia,"Palatino Linotype",serif;font-style:italic;font-weight:700;font-size:clamp(2.4rem,4.6vw,4.4rem);line-height:1.02;color:var(--navy);margin:.1rem 0 .5rem}
+  .name em{color:var(--blue);font-style:italic}
+  .cover .name{font-size:clamp(1.7rem,3vw,2.8rem)}
+  .cover h1{font-size:clamp(1.3rem,2.1vw,1.9rem);font-weight:800;color:#334155;margin-bottom:.8rem}
+  .cover .hint{font-size:.95rem;color:var(--muted);margin-top:.8rem}
+
+  /* Passos (como nasce um sistema) */
+  .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:.8rem;counter-reset:st}
+  .steps .st{position:relative;background:#fff;border:2px solid var(--line);border-radius:1.1rem;padding:1rem .9rem;box-shadow:0 6px 18px #1e3a8a14}
+  .steps .st:before{counter-increment:st;content:counter(st);position:absolute;top:-.8rem;left:.8rem;background:var(--blue);color:#fff;width:1.7rem;height:1.7rem;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:.95rem}
+  .steps .st:not(:last-child):after{content:"➜";position:absolute;right:-.85rem;top:45%;color:var(--blue);font-weight:900;z-index:2;background:var(--bg);border-radius:50%}
+  .steps .ico{font-size:2rem;line-height:1;margin-bottom:.3rem}
+  .steps h3{font-size:1.15rem;font-weight:800;color:var(--navy);margin-bottom:.2rem}
+  .steps p{font-size:.98rem;color:#334155}
+
+  /* Demo de código */
+  .demo{display:grid;grid-template-columns:1.25fr 1fr;gap:1rem;align-items:stretch}
+  .code{background:#0f172a;color:#e2e8f0;font-family:Consolas,"Cascadia Mono",monospace;font-size:1.02rem;border-radius:1rem;padding:.9rem 0;line-height:1.75;overflow:auto;box-shadow:0 10px 26px #0f172a44}
+  .code .ln{padding:0 1.1rem;white-space:pre;border-left:4px solid transparent}
+  .code .ln.on{background:#1e3a8a;border-left-color:#fbbf24}
+  .code .k{color:#93c5fd}.code .s{color:#86efac}.code .c{color:#94a3b8}
+  .term{background:#020617;color:#4ade80;font-family:Consolas,"Cascadia Mono",monospace;border-radius:1rem;padding:.9rem 1.1rem;font-size:1.1rem;display:flex;flex-direction:column;min-height:9rem;box-shadow:0 10px 26px #0f172a44}
+  .term .bar{color:#94a3b8;font-size:.85rem;margin-bottom:.4rem}
+  .term .out{flex:1;display:grid;align-content:start;gap:.2rem}
+  .term .out div{animation:rise .3s both}
+  .run{margin-top:.8rem;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+  .primary{background:var(--blue);color:#fff;border:none;border-radius:.9rem;padding:.7em 1.4em;font-size:1.15rem;font-weight:800}
+  .primary:disabled{opacity:.5;cursor:default}
+  .primary.gold{background:var(--gold);color:#241800}
+
+  /* Projeto como exemplo */
+  .proj{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:1rem}
+  .proj .badge{display:inline-block;background:var(--navy);color:#fff;border-radius:99px;padding:.25em .9em;font-weight:800;font-size:.95rem;margin-bottom:.6rem}
+  .tech{display:grid;gap:.4rem}
+  .tech div{display:flex;gap:.6rem;align-items:baseline;font-size:1.02rem}
+  .tech b{min-width:6.2rem;color:#fff;background:var(--purple);border-radius:.5rem;padding:.05em .55em;text-align:center;font-size:.95rem}
+  .kpis{display:flex;gap:.9rem;flex-wrap:wrap;margin-top:.7rem}
+  .kpis div{background:var(--navy);color:#fff;border-radius:.8rem;padding:.3rem .9rem;text-align:center}
+  .kpis b{display:block;font-size:1.4rem;color:var(--gold);line-height:1.1}
+  .kpis span{font-size:.8rem;color:#c7d6ff}
+  .proj .card{padding:.8rem 1rem}
+  .proj li,.proj .tech div{font-size:.98rem}
+  .proj ul{gap:.2rem}
+  #s-projeto h2{margin-bottom:.5rem}
+  #s-projeto{padding-top:1.1rem;padding-bottom:5rem}
+  #s-projeto .note{margin-top:.5rem}
+
+  /* ===== Navegação ===== */
+  .nav{position:absolute;left:0;right:0;bottom:0;height:4.2rem;display:flex;align-items:center;justify-content:space-between;
+    padding:0 1.4rem;background:#ffffffee;border-top:2px solid var(--line);z-index:6;gap:1rem}
+  .nav button{background:var(--blue);color:#fff;border:none;padding:.55em 1.1em;border-radius:.7rem;font-size:1.05rem;font-weight:700}
+  .nav button.ghost{background:#fff;color:var(--blue);border:2px solid var(--blue)}
+  .nav button:hover{filter:brightness(1.1)}
+  .dots{display:flex;gap:.45rem;flex-wrap:wrap;justify-content:center}
+  .dot{width:.85rem;height:.85rem;border-radius:50%;background:#c3cde8;border:none;padding:0}
+  .dot.on{background:var(--blue);transform:scale(1.25)}
+
+  /* ===== ROBÔ ===== */
+  .bot{width:var(--s,110px);height:var(--s,110px);flex:none;animation:float 3.6s ease-in-out infinite}
+  .bot svg{width:100%;height:100%;overflow:visible;transition:transform .3s}
+  @keyframes float{50%{transform:translateY(-6px)}}
+  .bot .eyes{animation:blink 5s infinite;transform-origin:60px 60px}
+  @keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+  .bot .eye{transform-box:fill-box;transform-origin:center;transition:transform .25s}
+  .bot .mouth{opacity:0;transform-box:fill-box;transform-origin:center}
+  .bot.talk .smile{opacity:0}
+  .bot.talk .mouth{opacity:1}   /* a abertura da boca é definida pelo JS, seguindo o volume real da voz */
+  .bot .plume{transform-origin:92px 18px;animation:sway 3s ease-in-out infinite}
+  @keyframes sway{50%{transform:rotate(7deg)}}
+  .bot.happy .eye{transform:scaleY(.55) translateY(-2px)}
+  .bot.wow .eye{transform:scale(1.3)}
+  .bot.think svg{transform:rotate(-6deg)}
+  .bot.think .eyes{transform:translate(5px,-4px)}
+  .bot.hop{animation:hop .6s ease}
+  @keyframes hop{30%{transform:translateY(-22px) rotate(-4deg)}60%{transform:translateY(0) rotate(3deg)}}
+
+  /* ===== PAINEL DO APRESENTADOR ===== */
+  .dock{width:var(--dock-w);flex:none;height:100%;display:flex;flex-direction:column;background:#fff;border-left:3px solid var(--gold);z-index:10}
+  .presenter{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;padding:.8rem 1rem .6rem;color:#fff;position:relative;
+    background:radial-gradient(circle at 50% 40%,#2b4fd6 0,#0b1b45 72%)}
+  .presenter .bot{--s:min(calc((var(--dock-w) - 3.6rem)/2),30vh);cursor:pointer;filter:drop-shadow(0 10px 18px #0009)}
+  .duo{display:flex;gap:.6rem;justify-content:center;align-items:flex-end;width:100%}
+  .pbot{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.25rem;opacity:.5;transform:scale(.9);transition:opacity .3s,transform .3s}
+  .pbot.on{opacity:1;transform:scale(1.05)}
+  .pbot.on .bot{filter:drop-shadow(0 0 16px #fde68acc)}
+  .presenter .pbot .plate b{font-size:1.02rem;line-height:1.15}
+  .presenter .pbot .plate small{font-size:.7rem}
+  .presenter .plate{text-align:center;margin-top:.1rem}
+  .presenter .plate b{display:block;font-family:Georgia,"Palatino Linotype",serif;font-style:italic;font-size:1.35rem;color:var(--gold);letter-spacing:.02em}
+  .presenter .plate small{font-size:.8rem;color:#c7d6ff;letter-spacing:.06em;text-transform:uppercase}
+  .presenter .st{font-size:.85rem;color:#93c5fd;margin-top:.15rem}
+  .presenter .x{position:absolute;top:.5rem;right:.6rem;background:#ffffff26;color:#fff;border:none;border-radius:.5rem;padding:.3em .6em;font-size:1rem;display:none}
+  .wave{display:flex;gap:4px;height:1.3rem;align-items:flex-end;margin-top:.3rem;opacity:.3;transition:opacity .3s}
+  .wave i{width:5px;height:25%;background:#67e8f9;border-radius:3px}
+  .pbot.talking .wave{opacity:1}
+  .pbot.talking .wave i{animation:eq .55s ease-in-out infinite alternate}
+  .wave i:nth-child(2){animation-delay:.08s!important}.wave i:nth-child(3){animation-delay:.16s!important}
+  .wave i:nth-child(4){animation-delay:.05s!important}.wave i:nth-child(5){animation-delay:.2s!important}
+  .wave i:nth-child(6){animation-delay:.11s!important}.wave i:nth-child(7){animation-delay:.02s!important}
+  @keyframes eq{to{height:100%}}
+  .ctrls{display:grid;gap:.45rem;padding:.7rem .8rem .9rem;background:#eef3ff;border-top:2px solid var(--line)}
+  .ctrls button,.ctrls select{width:100%;background:#fff;border:2px solid var(--blue);color:var(--blue);border-radius:.6rem;padding:.4em .7em;font-weight:700;font-size:1rem;text-align:left}
+  .ctrls button.on{background:var(--blue);color:#fff}
+  .ctrls .row2{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+  .ctrls label{font-size:.8rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+  .fab{position:fixed;right:1rem;bottom:5.2rem;z-index:30;display:none;border:none;background:var(--navy);color:var(--gold);border-radius:99px;
+    padding:.5rem 1.1rem .5rem .6rem;align-items:center;gap:.4rem;font-weight:800;font-size:1.05rem;box-shadow:0 8px 24px #0005}
+  .fab .bot{--s:2.8rem;animation:none;background:#fff;border-radius:50%}
+
+  /* ===== Tela inicial + boot ===== */
+  .splash{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 25%,#2b4fd6 0,#0b1b45 65%);display:flex;align-items:center;justify-content:center;color:#fff;padding:1.5rem;text-align:center;overflow-y:auto}
+  .splash.hide{display:none}
+  .splash .box{max-width:44rem}
+  .splash .bot{--s:min(11rem,24vh);margin:0 auto .3rem;filter:drop-shadow(0 12px 20px #0009)}
+  .splash .nm{font-family:Georgia,"Palatino Linotype",serif;font-style:italic;font-weight:700;font-size:clamp(2.2rem,5vw,3.6rem);color:var(--gold);line-height:1.05}
+  .splash .tag2{font-size:1.05rem;letter-spacing:.1em;text-transform:uppercase;color:#c7d6ff;margin:.3rem 0 .9rem}
+  .splash p{font-size:1.15rem;margin-bottom:.4rem;color:#e0e9ff}
+  .splash .vbox{background:#ffffff1f;border:2px solid #ffffff55;border-radius:1rem;padding:.8rem 1rem;margin:.6rem auto;max-width:34rem;text-align:left}
+  .splash .vbox label{display:block;font-size:.85rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#cfe0ff;margin-bottom:.3rem}
+  .splash .vrow{display:flex;gap:.5rem}
+  .splash select{flex:1;min-width:0;font-size:1.05rem;padding:.5em .6em;border-radius:.6rem;border:2px solid #fff;color:var(--ink);background:#fff}
+  .splash .btns{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:1rem}
+  .splash button{font-size:1.2rem;font-weight:800;padding:.65em 1.2em;border-radius:.9rem;border:none;background:var(--gold);color:#1f1300}
+  .splash button.big2{font-size:1.4rem;padding:.6em 1.5em;width:100%;box-shadow:0 0 0 4px #f5b30055,0 10px 24px #0007;animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{50%{box-shadow:0 0 0 10px #f5b30022,0 10px 24px #0007}}
+  .splash button.alt{background:#fff;color:var(--blue)}
+  .splash button.test{font-size:1rem;background:#fff;color:var(--blue);padding:.4em .9em}
+  .splash .vhint{font-size:.9rem;color:#cfe0ff;margin-top:.4rem}
+  .splash .box{max-width:52rem}
+  .duo3{display:flex;gap:1.5rem;justify-content:center;align-items:flex-end}
+  .splash .duo3 .bot{margin:0}
+  .nms{display:flex;gap:2.2rem;justify-content:center;flex-wrap:wrap;margin:.2rem 0}
+  .splash .nms .nm{font-size:clamp(1.5rem,3.2vw,2.5rem)}
+  .setup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.8rem;margin:.6rem auto;align-items:start}
+  .setup .vbox{margin:0;max-width:none;height:100%}
+  .boot{display:none;max-width:36rem;text-align:left;font-family:Consolas,"Cascadia Mono",monospace;font-size:1.15rem;color:#4ade80;background:#020617cc;border:2px solid #4ade8055;border-radius:1rem;padding:1.2rem 1.4rem;min-height:12rem}
+  .boot div{animation:rise .3s both;margin:.15rem 0}
+  .boot .cur:after{content:"▋";animation:blinkc 1s steps(2) infinite}
+  @keyframes blinkc{50%{opacity:0}}
+  .splash.booting .box{display:none}.splash.booting .boot{display:block}
+
+  /* ===== Telas pequenas ===== */
+  @media (max-width:1000px){
+    body{display:block}
+    .dock{position:fixed;left:0;right:0;bottom:0;width:100%;height:80%;border-left:none;border-top:4px solid var(--gold);border-radius:1.2rem 1.2rem 0 0;transform:translateY(105%);transition:transform .3s}
+    body.dock-open .dock{transform:none}
+    .presenter .x{display:block}
+    .fab{display:flex}
+    body.dock-open .fab{display:none}
+    .g2,.g3,.g4,.proj,.demo{grid-template-columns:1fr}
+    .steps{grid-template-columns:1fr}.steps .st:after{display:none}
+    .path{flex-direction:column}.path .arr{transform:rotate(90deg)}
+    .slide{justify-content:flex-start;padding:1.6rem 1.2rem 8.5rem}
+    .cover{flex-direction:column;align-items:flex-start;gap:1rem}
+    .cover .stagebot{width:min(9rem,38vw)}
+    .nav .lbl{display:none}
+  }
+  @media (max-width:1000px){ .desk-only{display:none} }
+  @media (max-width:800px){ .setup{grid-template-columns:1fr} }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- Tela inicial + sequência de boot -->
+<div class="splash" id="splash">
+  <div class="box">
+    <div class="duo3">
+      <div class="bot" data-who="m"></div>
+      <div class="bot" data-who="f"></div>
+    </div>
+    <div class="nms">
+      <div class="nm botNameM">Marquês</div>
+      <div class="nm botNameF">Aura</div>
+    </div>
+    <div class="tag2">Apresentadores oficiais do curso Técnico em Desenvolvimento de Sistemas</div>
+    <p>Dois robôs criados pelo <b class="coordName">Professor Ederson</b> vão apresentar o curso <b>integrado ao Ensino Médio</b> para a turma do 9º ano.</p>
+    <div class="btns">
+      <button id="startBtn" class="big2">▶ Iniciar apresentação</button>
+    </div>
+  </div>
+  <div class="boot" id="boot" aria-live="polite"></div>
+</div>
+
+<div class="stage" id="stage">
+  <div class="progress" id="progress"></div>
+  <main class="deck" id="deck">
+
+    <!-- 1. CAPA -->
+    <section class="slide cover" data-id="capa" data-title="Capa" data-mood="wow">
+      <div class="duo2"><div class="stagebot"><div class="bot hero-bot" data-who="m"></div></div><div class="stagebot"><div class="bot hero-bot" data-who="f"></div></div></div>
+      <div class="txt">
+        <div class="kicker">Apresentação para os alunos do 9º ano</div>
+        <div class="name"><span class="botNameM">Marquês</span> <em>&amp;</em> <span class="botNameF">Aura</span></div>
+        <h1>apresentam o curso <span class="hl">Técnico em Desenvolvimento de Sistemas</span> Integrado ao Ensino Médio</h1>
+        <div>
+          <span class="tag g">🤖 Dois robôs que conversam</span>
+          <span class="tag p">🎙️ Voz por inteligência artificial</span>
+          <span class="tag">💻 Programado pelo <span class="coordName">Professor Ederson</span></span>
+        </div>
+        <p class="hint">Setas <kbd>←</kbd> <kbd>→</kbd> navegam &nbsp;•&nbsp; <kbd>A</kbd> ou <kbd>Espaço</kbd> pausa e continua &nbsp;•&nbsp; <kbd>F</kbd> tela cheia</p>
+      </div>
+    </section>
+
+    <!-- 2. ROTEIRO -->
+    <section class="slide" data-id="roteiro" data-title="Roteiro" data-mood="happy">
+      <div class="kicker">Roteiro</div>
+      <h2>O que vamos ver hoje</h2>
+      <div class="grid g3">
+        <div class="card"><div class="ico">💻</div><h3>1. O curso</h3><p>O que é o integrado e o que faz um técnico em Desenvolvimento de Sistemas.</p></div>
+        <div class="card"><div class="ico">🧠</div><h3>2. Como nasce um sistema</h3><p>Como um sistema é criado e um exemplo real: esta apresentação.</p></div>
+        <div class="card"><div class="ico">🚀</div><h3>3. O futuro</h3><p>Onde trabalhar e como continuar estudando.</p></div>
+      </div>
+    </section>
+
+    <!-- 3. EPT -->
+    <section class="slide" data-id="ept" data-title="Educação Profissional" data-mood="happy">
+      <div class="kicker">Educação Profissional e Tecnológica</div>
+      <h2>Estudar e já sair com uma <span class="hl">profissão</span></h2>
+      <p class="lead">A EPT ajuda o estudante a entrar e atuar no <b>mundo do trabalho</b>. O Governo do Paraná oferece cursos técnicos <b>gratuitos</b> na rede estadual.</p>
+      <br>
+      <div class="grid g3">
+        <div class="card"><div class="ico">💸</div><h3>Gratuito</h3><p>Curso técnico oferecido pela rede estadual de ensino.</p></div>
+        <div class="card"><div class="ico">⏱️</div><h3>1.200 horas</h3><p>Carga horária mínima de formação profissional em Desenvolvimento de Sistemas.</p></div>
+        <div class="card"><div class="ico">📜</div><h3>Diploma técnico</h3><p>Você conclui o curso com diploma de técnico de nível médio.</p></div>
+      </div>
+      <div class="source">Fontes: Secretaria da Educação do Paraná e Catálogo Nacional de Cursos Técnicos (CNCT).</div>
+    </section>
+
+    <!-- 4. INTEGRADO -->
+    <section class="slide" data-id="integrado" data-title="Curso integrado" data-mood="wow">
+      <div class="kicker">Como funciona</div>
+      <h2>O curso <span class="hl">Integrado</span>: 2 em 1</h2>
+      <p class="lead">Você faz o <b>Ensino Médio</b> e o <b>curso técnico</b> ao mesmo tempo, na mesma escola.</p>
+      <br>
+      <div class="path">
+        <div class="card"><div class="big">1º ano</div><p>Você entra vindo do 9º ano</p></div><div class="arr">➜</div>
+        <div class="card"><div class="big">2º ano</div><p>Ensino Médio + Técnico</p></div><div class="arr">➜</div>
+        <div class="card"><div class="big">3º ano</div><p>Ensino Médio + Técnico</p></div><div class="arr">➜</div>
+        <div class="card hero"><div class="big">🎓</div><p><b>Técnico em DS</b> e Ensino Médio concluídos</p></div>
+      </div>
+      <p class="note"><b>Quem pode entrar:</b> quem concluiu o Ensino Fundamental (9º ano). &nbsp; <b>Duração:</b> 3 anos.</p>
+      <div class="source">Fonte: educacao.pr.gov.br e CNCT.</div>
+    </section>
+
+    <!-- 5. O CURSO -->
+    <section class="slide" data-id="curso" data-title="O curso" data-mood="wow">
+      <div class="kicker">Eixo Informação e Comunicação</div>
+      <h2>Técnico em <span class="hl">Desenvolvimento de Sistemas</span></h2>
+      <p class="lead">É quem <b>cria os programas e aplicativos</b> que usamos todos os dias. Sabe aquele app que você mais usa? Alguém programou!</p>
+      <div class="strip"><span>🏦 App do banco</span><span>🍔 Entrega de comida</span><span>🎮 Jogos</span><span>🏫 Sistemas de escola</span><span>🛒 Lojas online</span></div>
+      <br>
+      <div class="grid g3">
+        <div class="card"><div class="big">1.200 h</div><p>de formação profissional (mínimo)</p></div>
+        <div class="card"><div class="big">3 anos</div><p>integrado ao Ensino Médio</p></div>
+        <div class="card"><div class="big">CBO 3171-10</div><p>Desenvolvedor de Sistemas de Tecnologia da Informação</p></div>
+      </div>
+      <div class="source">Fonte: Catálogo Nacional de Cursos Técnicos (cnct.mec.gov.br).</div>
+    </section>
+
+    <!-- 7. COMO NASCE UM SISTEMA -->
+    <section class="slide" data-id="pipeline" data-title="Como nasce um sistema" data-mood="happy">
+      <div class="kicker">O que você vai aprender a fazer</div>
+      <h2>Como nasce um <span class="hl">sistema</span></h2>
+      <div class="steps">
+        <div class="st"><div class="ico">📐</div><h3>Planejar</h3><p>Descobrir o que o sistema precisa fazer e desenhar a solução.</p></div>
+        <div class="st"><div class="ico">⌨️</div><h3>Programar</h3><p>Escrever o código em linguagens de programação.</p></div>
+        <div class="st"><div class="ico">🧪</div><h3>Testar</h3><p>Caçar os erros (bugs) antes que o usuário encontre.</p></div>
+        <div class="st"><div class="ico">🛠️</div><h3>Manter</h3><p>Corrigir, melhorar e dar suporte técnico.</p></div>
+        <div class="st"><div class="ico">📚</div><h3>Documentar</h3><p>Registrar como tudo funciona para a equipe.</p></div>
+      </div>
+      <p class="note">Essas etapas fazem parte do perfil profissional do curso, junto com <b>pesquisar ferramentas novas</b>, trabalhar em equipe e resolver problemas.</p>
+      <div class="source">Fonte: perfil profissional de conclusão – CNCT.</div>
+    </section>
+
+    <!-- 8. ESPECIALIDADES -->
+    <section class="slide" data-id="especialidades" data-title="Especialidades" data-mood="wow">
+      <div class="kicker">Especialidades dentro da tecnologia</div>
+      <h2>Um sistema é como um <span class="hl">restaurante</span> 🍽️</h2>
+      <div class="grid g2">
+        <div class="card"><div class="ico">🖥️</div><h3>Front-End: o salão</h3><p>A parte que a pessoa vê e toca: telas, botões, cores e animações.</p></div>
+        <div class="card"><div class="ico">⚙️</div><h3>Back-End: a cozinha</h3><p>Onde as regras e os cálculos acontecem, longe dos olhos do cliente.</p></div>
+        <div class="card"><div class="ico">🗄️</div><h3>Banco de dados: a despensa</h3><p>Onde todas as informações ficam guardadas com organização e segurança.</p></div>
+        <div class="card"><div class="ico">📱</div><h3>Aplicativos: o delivery</h3><p>Levam tudo isso para o bolso das pessoas, direto no celular.</p></div>
+      </div>
+      <p class="note">O catálogo nacional prevê certificações nessas áreas: Desenvolvedor Front-End, Back-End, Desenvolvedor para Celulares e Administrador de Banco de Dados.</p>
+      <div class="source">Fonte: itinerários formativos – CNCT.</div>
+    </section>
+
+    <!-- 9. ESTE PROJETO -->
+    <section class="slide" id="s-projeto" data-id="projeto" data-title="Sistema real: esta apresentação" data-mood="wow">
+      <div class="kicker">Exemplo de sistema desenvolvido aqui</div>
+      <h2>Você está dentro de um <span class="hl">sistema real</span></h2>
+      <p class="lead" style="max-width:none;margin-bottom:.6rem;font-size:1.15rem">Esta apresentação foi programada pelo <b>coordenador do curso</b>, e quem conduz são os robôs <b class="botNameM">Marquês</b> e <b class="botNameF">Aura</b>.</p>
+      <div class="proj">
+        <div class="card hero">
+          <span class="badge">O que ele faz</span>
+          <ul>
+            <li><b>Dois robôs</b> que conversam e explicam cada slide</li>
+            <li>Boca que <b>mexe de verdade</b>, no ritmo da voz</li>
+            <li><b>Conteúdo do curso</b> organizado em slides, explicado em diálogo</li>
+            <li>Roda no navegador, <b>sem instalar nada</b></li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">Tecnologias</span>
+          <div class="tech">
+            <div><b>HTML</b> estrutura dos slides</div>
+            <div><b>CSS</b> visual e animações do robô</div>
+            <div><b>JavaScript</b> comportamento e voz</div>
+            <div><b>Python</b> gera a voz com IA neural</div>
+          </div>
+        </div>
+        <div class="card">
+          <span class="badge">Mesmas etapas do curso</span>
+          <ul>
+            <li>📐 Planejou a ideia e o roteiro</li>
+            <li>⌨️ Programou o código</li>
+            <li>🧪 Testou e corrigiu bugs</li>
+            <li>🛠️ Melhora a cada versão</li>
+            <li>📚 Documentou o projeto</li>
+          </ul>
+        </div>
+      </div>
+      <div class="kpis">
+        <div><b>+1.000</b><span>linhas de código</span></div>
+        <div><b>4</b><span>linguagens</span></div>
+        <div><b>2</b><span>robôs conversando</span></div>
+        <div><b>1</b><span>coordenador programador</span></div>
+      </div>
+      <p class="note">Com o que você aprende no curso, também poderá criar sistemas assim, e ainda maiores!</p>
+    </section>
+
+    <!-- 10. ONDE TRABALHAR -->
+    <section class="slide" data-id="trabalhar" data-title="Onde trabalhar" data-mood="happy">
+      <div class="kicker">Campo de atuação</div>
+      <h2>Onde você <span class="hl">pode trabalhar</span></h2>
+      <div class="grid g2">
+        <div class="card">
+          <h3>🏢 Locais</h3>
+          <ul>
+            <li>Empresas de desenvolvimento de sistemas</li>
+            <li>Setores de TI de órgãos do governo e ONGs</li>
+            <li>Empresas de consultoria em sistemas</li>
+            <li>Empresas de análise de dados</li>
+            <li>Como <b>profissional autônomo</b></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🏷️ Qualificações no caminho</h3>
+          <p>Certificações intermediárias possíveis:</p>
+          <p><span class="tag">Programador de Sistemas</span><span class="tag">Desenvolvedor Front-End</span><span class="tag">Desenvolvedor Back-End</span><span class="tag">Desenvolvedor para Celulares</span><span class="tag">Administrador de Banco de Dados</span></p>
+        </div>
+      </div>
+      <p class="note">A profissão não é regulamentada: não precisa de registro em conselho.</p>
+      <div class="source">Fonte: CNCT.</div>
+    </section>
+
+    <!-- 11. DEPOIS -->
+    <section class="slide" data-id="depois" data-title="Depois do curso" data-mood="wow">
+      <div class="kicker">Depois do curso</div>
+      <h2>O caminho <span class="hl">continua</span></h2>
+      <div class="grid g2">
+        <div class="card"><div class="ico">📈</div><h3>Especializações técnicas</h3>
+          <p><span class="tag p">Aplicativos para celular</span><span class="tag p">Comércio eletrônico</span><span class="tag p">Segurança da informação</span><span class="tag p">Inteligência Artificial</span><span class="tag p">Internet das Coisas</span><span class="tag p">Machine Learning</span><span class="tag p">Ciência de Dados</span></p></div>
+        <div class="card"><div class="ico">🏛️</div><h3>Faculdade</h3>
+          <p><span class="tag">Análise e Desenv. de Sistemas</span><span class="tag">Ciência da Computação</span><span class="tag">Sistemas de Informação</span><span class="tag">Engenharia de Software</span><span class="tag">Jogos Digitais</span><span class="tag">Segurança da Informação</span></p></div>
+      </div>
+      <p class="note">O diploma do integrado vale como conclusão do Ensino Médio, inclusive para a faculdade.</p>
+      <div class="source">Fonte: CNCT (formação continuada e verticalização) e Deliberação nº 05/2013 – CEE.</div>
+    </section>
+
+    <!-- 12. MITOS E VERDADES -->
+    <section class="slide" data-id="mitos" data-title="Mitos e verdades" data-mood="think">
+      <div class="kicker">Mitos e verdades</div>
+      <h2>Será que eu <span class="hl">consigo</span>?</h2>
+      <div class="grid g2">
+        <div class="card"><h3>“Preciso já saber programar.”</h3><p><span class="ok">MITO.</span> Para entrar basta ter concluído o 9º ano. Você aprende do zero.</p></div>
+        <div class="card"><h3>“O diploma não vale como Ensino Médio.”</h3><p><span class="ok">MITO.</span> No integrado, ele vale como habilitação profissional e como conclusão do Ensino Médio.</p></div>
+        <div class="card"><h3>“É só jogar no computador.”</h3><p><span class="ok">MITO.</span> Envolve lógica, planejamento, testes, documentação e trabalho em equipe.</p></div>
+        <div class="card"><h3>“Preciso ser bom em tudo.”</h3><p><span class="warn">DEPENDE.</span> Precisa de dedicação, curiosidade e vontade de resolver problemas.</p></div>
+      </div>
+    </section>
+
+    <!-- 14. ENCERRAMENTO -->
+    <section class="slide" data-id="fim" data-title="Encerramento" data-mood="happy" data-pause="1">
+      <div class="kicker">Para finalizar</div>
+      <h1>Obrigado, <span class="hl">turma!</span></h1>
+      <p class="lead">Ficou com alguma dúvida? Fale com <b class="contatoName">a coordenação do curso</b>.</p>
+      <br>
+      <div class="grid g3" id="infoCards"></div>
+      <p class="note">Esperamos vocês no 1º ano do Técnico em Desenvolvimento de Sistemas! 🚀 &nbsp; <i class="serif">— Marquês e Aura</i></p>
+    </section>
+  </main>
+
+  <nav class="nav">
+    <button id="prev" class="ghost">← <span class="lbl">Anterior</span></button>
+    <div class="dots" id="dots"></div>
+    <div style="display:flex;gap:.5rem">
+      <button id="fs" class="ghost desk-only" title="Tela cheia (F)">⛶</button>
+      <button id="next"><span class="lbl">Próximo</span> →</button>
+    </div>
+  </nav>
+</div>
+
+<button class="fab" id="fab"><div class="bot" data-who="m"></div><div class="bot" data-who="f"></div>Robôs</button>
+
+<!-- Painel dos apresentadores -->
+<aside class="dock" id="dock" aria-label="Robôs apresentadores">
+  <div class="presenter">
+    <button class="x" id="dockClose" aria-label="Fechar painel">✕</button>
+    <div class="duo">
+      <div class="pbot" data-who="m">
+        <div class="bot" data-who="m"></div>
+        <div class="plate"><b class="botNameM">Marquês</b><small>Voz masculina</small></div>
+        <div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="pbot" data-who="f">
+        <div class="bot" data-who="f"></div>
+        <div class="plate"><b class="botNameF">Aura</b><small>Voz feminina</small></div>
+        <div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+    </div>
+    <span class="st" id="status">Pronto para apresentar</span>
+  </div>
+  <div class="ctrls">
+    <button id="autoBtn">⏸ Pausar</button>
+    <button id="replayBtn">🔁 Repetir este slide</button>
+  </div>
+</aside>
+
+<!-- Volume real de cada áudio (gerado por gerar_audios.py) para a boca acompanhar a voz -->
+<script src="audio/env.js"></script>
+<script>
+/* =====================================================================
+   ✏️  PERSONALIZE AQUI  (depois de mudar, rode gerar_audios.bat)
+   Os textos do bloco logo abaixo são lidos pelo gerador de voz.
+   Cada fala é [quem, texto]: M = Marquês (voz masculina), F = Aura (voz feminina).
+   ===================================================================== */
+/*T:INI*/
+const CONFIG = {
+  botM:         "Marquês",   // robô com voz masculina
+  botF:         "Aura",  // robô com voz feminina
+  coordenador:  "Professor Ederson",
+  escola:       "nossa escola",                                  // <- nome do colégio
+  contato:      "o Professor Ederson, coordenador do curso",     // <- ex.: "a secretaria pelo telefone (41) 0000-0000"
+  // Informações locais (opcionais). Se preencher, aparecem no slide final e os robôs falam.
+  horario:       "",  // ex.: "Período integral, das 7h30 às 16h"
+  vagas:         "",  // ex.: "40 vagas por turma"
+  selecao:       "",  // ex.: "Ingresso por sorteio entre os inscritos"
+  linguagens:    "",  // ex.: "Python, JavaScript, HTML/CSS e SQL"
+};
+const M="m", F="f";
+
+/* Prepara o texto para ser falado (siglas soletradas, sem emojis/links) */
+const clean = t => t.replace(/https?:\/\/\S+/g,"")
+  .replace(/\bTDS\b/g,"T D S")
+  .replace(/\bTI\b/g,"T I").replace(/\bCBO\b/g,"C B O").replace(/\bDS\b/g,"D S").replace(/\bEPT\b/g,"E P T")
+  .replace(/\bCEE\b/g,"C E E").replace(/\bCNCT\b/g,"C N C T").replace(/\bHTML\b/g,"H T M L").replace(/\bCSS\b/g,"C S S")
+  .replace(/[^\p{L}\p{N}\s.,!?:;()\-]/gu,"").replace(/\s+/g," ").trim();
+const splitParts = t => t.split(/(?<=[.!?:])\s+/).filter(Boolean);
+function hid(s){ let h=0x811c9dc5; s=s.trim(); for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0 } return h.toString(16).padStart(8,"0"); }
+/* Identificador do áudio de uma frase: depende de quem fala (voz) e do texto */
+const clipId = (w,s) => hid(w+"|"+s);
+
+const has = v => v && v.trim();
+/* Diálogo de cada slide: lista de falas [quem, texto] */
+const NARR = {
+  capa: ()=>[
+    [F,`Olá, turma! Eu sou a ${CONFIG.botF}, uma robô criada pelo ${CONFIG.coordenador}, coordenador do curso da ${CONFIG.escola}.`],
+    [M,`E eu sou o ${CONFIG.botM}, o outro robô da dupla! Sim, nós somos sistemas de verdade, programados do zero!`],
+    [F,`Hoje nós dois vamos apresentar para vocês, que estão no nono ano, o curso Técnico em Desenvolvimento de Sistemas, integrado ao Ensino Médio.`],
+    [M,`Preparados? Então vamos lá!`],
+  ],
+  roteiro: ()=>[
+    [F,`Marquês, o que temos no roteiro de hoje?`],
+    [M,`Aura, temos três partes! Primeiro, o que é o curso. Segundo, como um sistema nasce, com um exemplo real que vocês estão vendo agora mesmo.`],
+    [F,`E terceiro, o que dá para fazer no futuro: onde trabalhar e como continuar estudando.`],
+  ],
+  ept: ()=>[
+    [M,`Vamos começar pela Educação Profissional. Ela ajuda vocês a entrar no mundo do trabalho.`],
+    [F,`E o melhor: o Governo do Paraná oferece cursos técnicos gratuitos! No nosso caso, são no mínimo mil e duzentas horas de formação.`],
+    [M,`E no final, vocês recebem um diploma de técnico!`],
+  ],
+  integrado: ()=>[
+    [F,`Agora vem a parte mais legal: o curso integrado! Vocês fazem duas coisas ao mesmo tempo: o Ensino Médio e o curso técnico, na mesma escola.`],
+    [M,`Entra quem concluiu o nono ano, e o curso dura três anos.`],
+    [F,`No final, vocês saem com o Ensino Médio concluído e com uma profissão!`],
+  ],
+  curso: ()=>[
+    [M,`Mas o que faz um técnico em Desenvolvimento de Sistemas? Ele cria os programas e aplicativos que usamos todos os dias.`],
+    [F,`O aplicativo do banco, o de entrega de comida, os jogos, os sistemas das escolas e as lojas online.`],
+    [M,`Sabe aquele aplicativo que vocês mais usam? Alguém programou!`],
+  ],
+  pipeline: ()=>[
+    [F,`E como nasce um sistema, Marquês?`],
+    [M,`Em cinco etapas! Primeiro, planejar: descobrir o que o sistema precisa fazer e desenhar a solução. Depois, programar: escrever o código.`],
+    [F,`Em seguida, testar: procurar os erros, que chamamos de bugs, antes que o usuário encontre. Depois, manter: corrigir e melhorar sempre.`],
+    [M,`E por fim, documentar: registrar como tudo funciona para a equipe.`],
+    [F,`Essas etapas fazem parte do perfil profissional do curso, junto com pesquisar ferramentas novas.`],
+  ],
+  especialidades: ()=>[
+    [F,`Dentro da tecnologia existem várias especialidades. Pensem em um restaurante!`],
+    [M,`O front-end é o salão: a parte bonita que o cliente vê e usa, como telas e botões. O back-end é a cozinha: onde as regras e os cálculos acontecem, longe dos olhos do cliente.`],
+    [F,`O banco de dados é a despensa: onde tudo fica guardado. E os aplicativos são o delivery, que levam tudo isso para o bolso das pessoas.`],
+    [M,`O catálogo nacional prevê certificações nessas áreas.`],
+  ],
+  projeto: ()=>[
+    [M,`Agora, uma surpresa! Vocês estão dentro de um sistema real, desenvolvido aqui mesmo.`],
+    [F,`É esta apresentação, programada pelo coordenador do curso! Ela tem dois robôs que conversam, que somos nós, com a boca que mexe no ritmo da voz.`],
+    [M,`E funciona direto no navegador, sem instalar nada.`],
+    [M,`Para criar tudo isso, foram usados HTML, para a estrutura, e CSS, para o visual e as nossas animações.`],
+    [F,`Também entraram JavaScript, para o comportamento, e Python, para gerar as nossas vozes com inteligência artificial.`],
+    [F,`O desenvolvimento seguiu as mesmas etapas que vimos: planejar, programar, testar, manter e documentar.`],
+    [M,`Com o que vocês aprendem no curso, também poderão criar sistemas assim, e ainda maiores!`],
+  ],
+  trabalhar: ()=>[
+    [F,`E onde vocês podem trabalhar? Em empresas de desenvolvimento de sistemas, no setor de tecnologia de órgãos públicos, em consultorias e em empresas de análise de dados.`],
+    [M,`Ou até como profissional autônomo! Ao longo do curso, vocês podem receber certificações, como programador, desenvolvedor front-end ou back-end.`],
+  ],
+  depois: ()=>[
+    [M,`E depois do curso? O caminho continua! Dá para fazer especializações, como inteligência artificial, segurança da informação, ciência de dados e aplicativos para celular.`],
+    [F,`Também dá para cursar faculdade, porque o diploma do integrado vale como Ensino Médio concluído.`],
+  ],
+  mitos: ()=>[
+    [F,`Vamos desfazer alguns mitos? Precisa já saber programar?`],
+    [M,`Não! Vocês aprendem do zero. O diploma vale como Ensino Médio? Vale, sim!`],
+    [F,`É só ficar jogando? Também não. E precisa ser bom em tudo?`],
+    [M,`Precisa de dedicação, curiosidade e vontade de aprender.`],
+  ],
+  fim: ()=>[
+    [F,`Chegamos ao fim! Muito obrigada por assistirem, turma.`],
+    [M,`${infoSpoken()} Se ficarem com dúvidas, é só falar com ${CONFIG.contato}.`.trim()],
+    [F,`Foi um prazer apresentar para vocês! Eu sou a ${CONFIG.botF}.`],
+    [M,`E eu sou o ${CONFIG.botM}. Esperamos vocês no primeiro ano do curso!`],
+  ],
+};
+function infoItems(){
+  return [["👥","Vagas",CONFIG.vagas],["🕒","Horário",CONFIG.horario],["🗳️","Seleção",CONFIG.selecao],["💻","Linguagens",CONFIG.linguagens]].filter(x=>has(x[2]));
+}
+function infoSpoken(){
+  const it=infoItems(); if(!it.length) return "";
+  return "Só lembrando: "+it.map(x=>`${x[1]}: ${x[2]}.`).join(" ");
+}
+/* Falas extras ao clicar em um robô (com a apresentação pausada) */
+const EGGS = {
+  m:[
+    "Ei! Isso faz cócegas nos meus circuitos!",
+    "Sou um robô nobre, mas aceito elogios!",
+    "Dica do Marquês: quem programa nunca para de aprender!",
+    "Já tentou desligar e ligar de novo? Isso resolve metade dos problemas!",
+    "Bip, bip! Estou funcionando a cem por cento!",
+  ],
+  f:[
+    "Opa! Cuidado com a minha coroa, ela é delicada!",
+    "Sou uma robô elegante, mas também sei programar!",
+    "Dica da Aura: um bug é só um erro esperando ser corrigido!",
+    "Bip, bip! Estou brilhando mais que uma joia!",
+    "Sabia que o primeiro programador da história foi uma mulher? Ada Lovelace!",
+  ],
+};
+/** Todas as falas possíveis: lista de [quem, texto] (usado por gerar_audios.py) */
+function allTexts(){
+  const t=[]; const add=turns=>turns.forEach(x=>t.push(x));
+  Object.values(NARR).forEach(f=>add(f()));
+  EGGS.m.forEach(e=>t.push([M,e])); EGGS.f.forEach(e=>t.push([F,e]));
+  return t;
+}
+/*T:FIM*/
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const SHORT = { m: CONFIG.botM.split(" ")[0], f: CONFIG.botF.split(" ")[0] };
+
+/* =====================================================================
+   🤖  Os dois robôs (SVG inline para as animações funcionarem)
+   ===================================================================== */
+const ROBOT_M = `<svg viewBox="0 -12 120 152" aria-hidden="true">
+  <rect x="4" y="58" width="10" height="24" rx="5" fill="#6d28d9"/><rect x="106" y="58" width="10" height="24" rx="5" fill="#6d28d9"/>
+  <rect x="28" y="108" width="64" height="30" rx="12" fill="#1e3a8a" stroke="#f5b301" stroke-width="2.5"/>
+  <text x="60" y="130" text-anchor="middle" font-family="Consolas,monospace" font-size="13" font-weight="800" fill="#f5b301">&lt;/&gt;</text>
+  <circle cx="40" cy="121" r="4.5" fill="#f5b301" stroke="#b45309" stroke-width="1"/><path d="M37 125 l-2 8 l5 -3 l5 3 l-2 -8z" fill="#dc2626"/>
+  <rect x="12" y="30" width="96" height="78" rx="26" fill="#2563eb" stroke="#1e3a8a" stroke-width="3"/>
+  <rect x="22" y="42" width="76" height="52" rx="18" fill="#0f172a"/>
+  <g class="eyes"><ellipse class="eye" cx="44" cy="60" rx="8.5" ry="10.5" fill="#67e8f9"/><ellipse class="eye" cx="76" cy="60" rx="8.5" ry="10.5" fill="#67e8f9"/></g>
+  <ellipse cx="34" cy="76" rx="6" ry="3.5" fill="#f472b6" opacity=".5"/><ellipse cx="86" cy="76" rx="6" ry="3.5" fill="#f472b6" opacity=".5"/>
+  <path class="smile" d="M47 77 Q60 88 73 77" stroke="#67e8f9" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <ellipse class="mouth" cx="60" cy="80" rx="9" ry="5.5" fill="#67e8f9"/>
+  <path d="M42 106 q6 15 12 5 q6 15 12 0 q6 11 12 -4 q3 7 4 -1 L80 106Z" fill="#fff" stroke="#cbd5e1" stroke-width="1.5" stroke-linejoin="round"/>
+  <path class="plume" d="M90 22 Q118 4 113 -10 Q100 -2 86 16 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <path d="M5 42 Q28 8 60 12 Q92 8 115 42 Q60 31 5 42Z" fill="#111c44" stroke="#f5b301" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M14 37 Q60 27 106 37" stroke="#f5b301" stroke-width="3" fill="none"/>
+  <circle cx="60" cy="24" r="6.5" fill="#16a34a" stroke="#facc15" stroke-width="2"/><circle cx="60" cy="24" r="2.4" fill="#facc15"/>
+</svg>`;
+const ROBOT_F = `<svg viewBox="0 -12 120 152" aria-hidden="true">
+  <rect x="4" y="58" width="10" height="24" rx="5" fill="#be185d"/><rect x="106" y="58" width="10" height="24" rx="5" fill="#be185d"/>
+  <rect x="28" y="108" width="64" height="30" rx="12" fill="#6b21a8" stroke="#f5b301" stroke-width="2.5"/>
+  <text x="60" y="134" text-anchor="middle" font-family="Consolas,monospace" font-size="13" font-weight="800" fill="#f5b301">&lt;/&gt;</text>
+  <path class="plume" d="M94 34 Q128 30 118 70 Q112 52 96 50Z" fill="#f472b6" stroke="#be185d" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="12" y="30" width="96" height="78" rx="26" fill="#a855f7" stroke="#581c87" stroke-width="3"/>
+  <rect x="22" y="42" width="76" height="52" rx="18" fill="#0f172a"/>
+  <g class="eyes">
+    <ellipse class="eye" cx="44" cy="60" rx="8.5" ry="10.5" fill="#f0abfc"/><ellipse class="eye" cx="76" cy="60" rx="8.5" ry="10.5" fill="#f0abfc"/>
+    <path d="M35 53 l-6 -4 M37 49 l-4 -6 M85 53 l6 -4 M83 49 l4 -6" stroke="#f0abfc" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+  </g>
+  <ellipse cx="34" cy="76" rx="6" ry="3.5" fill="#f472b6" opacity=".6"/><ellipse cx="86" cy="76" rx="6" ry="3.5" fill="#f472b6" opacity=".6"/>
+  <path class="smile" d="M47 77 Q60 88 73 77" stroke="#f0abfc" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <ellipse class="mouth" cx="60" cy="80" rx="9" ry="5.5" fill="#f0abfc"/>
+  <path d="M60 111 l-15 -9 v18z M60 111 l15 -9 v18z" fill="#f472b6" stroke="#be185d" stroke-width="1.5" stroke-linejoin="round"/><circle cx="60" cy="111" r="4" fill="#fbcfe8" stroke="#be185d" stroke-width="1.5"/>
+  <path d="M28 36 L36 12 L48 27 L60 6 L72 27 L84 12 L92 36 Q60 28 28 36Z" fill="#f5b301" stroke="#b45309" stroke-width="2.5" stroke-linejoin="round"/>
+  <circle cx="36" cy="13" r="3.2" fill="#22d3ee" stroke="#0e7490" stroke-width="1"/><circle cx="60" cy="7" r="3.8" fill="#ef4444" stroke="#7f1d1d" stroke-width="1"/><circle cx="84" cy="13" r="3.2" fill="#22d3ee" stroke="#0e7490" stroke-width="1"/>
+</svg>`;
+$$(".bot").forEach(b=>b.innerHTML = b.dataset.who==="f" ? ROBOT_F : ROBOT_M);
+const setMood = m => $$(".bot").forEach(b=>{["happy","wow","think"].forEach(c=>b.classList.remove(c)); if(m) b.classList.add(m)});
+const setStatus = t => $("#status").textContent=t;
+
+/* ---- Boca sincronizada com a fala -------------------------------------
+   • Voz humana: usa o volume REAL de cada áudio (audio/env.js, medido por gerar_audios.py)
+     e lê a posição atual do áudio (currentTime) a cada quadro.
+   • Voz do navegador (sem áudio para medir): a boca segue o ritmo das palavras (evento boundary). */
+const ENV = (window.TDS_ENV && window.TDS_ENV.d) || {}, ENV_FPS = (window.TDS_ENV && window.TDS_ENV.fps) || 40;
+const MOUTHS = { m:$$('.bot[data-who="m"] .mouth'), f:$$('.bot[data-who="f"] .mouth') };
+let mouthMode="off", mouthKey=null, mouthLvl=0, pulse=0, talkWho=M;
+const setSpeaker = w => { talkWho=w; $$(".pbot").forEach(p=>p.classList.toggle("on",p.dataset.who===w)); };
+const setTalk = (on,mode,w) => {
+  if(w) talkWho=w;
+  mouthMode = on ? (mode||"synth") : "off";
+  $$(".bot").forEach(b=>b.classList.toggle("talk", on && b.dataset.who===talkWho));
+  $$(".pbot").forEach(p=>p.classList.toggle("talking", on && p.dataset.who===talkWho));
+  document.body.classList.toggle("talking",on);
+};
+(function mouthLoop(now){
+  let target=0;
+  if(mouthMode==="env" && curClip && ENV[mouthKey]){
+    const e=ENV[mouthKey], p=Math.max(0,curClip.currentTime-0.06)*ENV_FPS, i=Math.floor(p), f=p-i;
+    const a=parseInt(e[i]||"0",16)/15, b=parseInt(e[i+1]||"0",16)/15;
+    target = curClip.paused ? 0 : a+(b-a)*f;
+  } else if(mouthMode==="synth"){
+    const t=now/1000;                                   // ritmo de sílabas (~5 por segundo) + pulso a cada palavra
+    target = Math.min(1, Math.max(0,(Math.sin(t*31)*.5+.5)*(Math.sin(t*9.3)*.4+.6)*.75) + pulse*.5);
+    pulse*=.9;
+  }
+  mouthLvl += (target-mouthLvl)*(target>mouthLvl?.6:.35);        // abre rápido, fecha um pouco mais devagar
+  const sy=.14+mouthLvl*1.9, sx=1.05-mouthLvl*.25, tr=`scale(${sx.toFixed(3)},${sy.toFixed(3)})`;
+  (MOUTHS[talkWho]||[]).forEach(m=>m.style.transform=tr);
+  requestAnimationFrame(mouthLoop);
+})(performance.now());
+
+/* =====================================================================
+   🔊  VOZ
+   1) Vozes humanas neurais (mp3 pré-gravados em /audio, por gerar_audios.bat):
+      masculina para o Marquês e feminina para a Aura
+   2) Se faltar o arquivo: melhor voz do navegador em português, do gênero certo
+   ===================================================================== */
+const canSpeak = "speechSynthesis" in window;
+let voiceOn=true, speakToken=0;
+const RATE=0.96, PITCH_M=0.9, PITCH_F=1.06, GAP=260, GAP_HUMAN=110, GAP_TURN=340;
+
+const MALE = /antonio|ant[ôo]nio|daniel|felipe|ricardo|jorge|paulo|jos[eé]|jo[aã]o|luiz|donato|fabio|f[áa]bio|humberto|julio|j[úu]lio|nicolau|val[ée]rio|\bmale\b|masculin/i;
+const FEMALE = /francisca|thalita|maria|luciana|fernanda|vit[óo]ria|camila|raquel|giovanna|let[íi]cia|brenda|elza|manuela|yara|heloisa|helo[íi]sa|google|female|feminin/i;
+function scoreVoice(v,w){
+  const lang=(v.lang||"").replace("_","-");
+  if(!/^pt/i.test(lang)) return -999;
+  let s = /^pt-BR/i.test(lang) ? 20 : -30;
+  const want = w===M ? MALE : FEMALE, other = w===M ? FEMALE : MALE;
+  if(other.test(v.name)) s-=200;
+  if(want.test(v.name)) s+=40;
+  if(/natural|online/i.test(v.name)) s+=45;
+  if(/antonio|ant[ôo]nio|francisca|thalita/i.test(v.name)) s+=35;
+  return s;
+}
+const voiceFor = w => { if(!canSpeak) return null; const vs=speechSynthesis.getVoices().filter(v=>scoreVoice(v,w)>-900).sort((a,b)=>scoreVoice(b,w)-scoreVoice(a,w)); return vs[0]||null; };
+if(canSpeak) speechSynthesis.getVoices();
+
+let humanOK=null;                       // null = verificando, true = há áudios, false = não há
+const clipCache={}; let curClip=null;
+const clipUrl = (w,raw) => "audio/"+clipId(w,raw)+".mp3";
+function getClip(w,raw){
+  const u=clipUrl(w,raw);
+  if(!clipCache[u]){ const a=new Audio(); a.preload="auto"; a.src=u; clipCache[u]=a; }
+  return clipCache[u];
+}
+function probeHuman(){
+  const [w,t]=NARR.capa()[0], a=getClip(w,splitParts(t)[0]);
+  if(a.readyState>=1){ humanOK=true; return; }
+  a.addEventListener("loadedmetadata",()=>{humanOK=true},{once:true});
+  a.addEventListener("error",()=>{humanOK=false},{once:true});
+}
+const canTalk = () => canSpeak || humanOK!==false;
+
+function haltClip(){
+  if(curClip){ curClip.onended=curClip.onerror=curClip.onplaying=curClip.onloadedmetadata=null; try{curClip.pause()}catch(_){} curClip=null; }
+}
+function stopSpeak(){ speakToken++; haltClip(); if(canSpeak) speechSynthesis.cancel(); setTalk(false); }
+
+/** Fala uma sequência de falas [quem, texto], frase por frase, alternando as vozes.
+ *  Usa a voz humana (mp3) e, se faltar o arquivo, a voz do navegador. */
+function speak(turns,{onend}={}){
+  const my=++speakToken; haltClip(); if(canSpeak) speechSynthesis.cancel();
+  const items=[]; turns.forEach(([w,t])=>splitParts(t).forEach(s=>items.push({w,s})));
+  let i=0;
+  const finish=()=>{ if(my!==speakToken) return; setTalk(false); setStatus("Pronto para apresentar"); onend&&onend(); };
+  const next=()=>{
+    if(my!==speakToken) return;
+    if(i>=items.length) return finish();
+    const it=items[i++], raw=it.s, w=it.w; setSpeaker(w);
+    let guard, advanced=false, usedHuman=false;
+    const setGuard=ms=>{ clearTimeout(guard); guard=setTimeout(adv,ms) };
+    const adv=()=>{ if(advanced||my!==speakToken) return; advanced=true; clearTimeout(guard); haltClip(); setTalk(false);
+      const swap=items[i] && items[i].w!==w; setTimeout(next, swap?GAP_TURN:(usedHuman?GAP_HUMAN:GAP)); };
+    const dur=Math.max(1400,raw.length*72);
+    setStatus(SHORT[w]+" falando…");
+    if(!voiceOn){ setGuard(dur); return; }
+
+    const browserVoice=()=>{                                      // voz sintetizada do navegador
+      usedHuman=false;
+      if(!canSpeak){ setGuard(dur); return; }
+      const u=new SpeechSynthesisUtterance(clean(raw));
+      const v=voiceFor(w); u.lang="pt-BR"; if(v){u.voice=v; u.lang=v.lang} u.rate=RATE; u.pitch=w===M?PITCH_M:PITCH_F; u.volume=1;
+      u.onstart=()=>{ if(my===speakToken) setTalk(true,"synth",w) };
+      u.onboundary=()=>{ pulse=1 };
+      u.onend=adv; u.onerror=adv;
+      setGuard(dur*2+4000);
+      speechSynthesis.resume(); speechSynthesis.speak(u);
+    };
+
+    if(humanOK!==false){                                          // voz humana neural
+      const a=getClip(w,raw); usedHuman=true;
+      if(a.error){ browserVoice(); return; }
+      curClip=a; let over=false;
+      const fail=()=>{ if(over||my!==speakToken) return; over=true; haltClip(); browserVoice(); };
+      a.onerror=fail;
+      mouthKey=clipId(w,raw);
+      a.onplaying=()=>{ if(my===speakToken) setTalk(true, ENV[mouthKey]?"env":"synth", w) };
+      a.onloadedmetadata=()=>setGuard((a.duration||8)*1000+3000);
+      a.onended=()=>{ if(over) return; over=true; adv(); };
+      setGuard(a.readyState>=1 && a.duration ? a.duration*1000+3000 : 15000);   // já carregado: usa a duração real (senão frases longas eram cortadas e as vozes se misturavam)
+      try{ a.currentTime=0 }catch(_){}
+      const p=a.play(); if(p&&p.catch) p.catch(fail);
+      if(items[i]) getClip(items[i].w,items[i].s);                // pré-carrega a próxima frase
+    } else browserVoice();
+  };
+  setTimeout(next,60);
+}
+function say(turns,{mood="happy",onend}={}){ setMood(mood); speak(turns,{onend}); }
+
+function renderInfo(){
+  const it=infoItems(), box=$("#infoCards");
+  box.innerHTML = it.length ? it.map(x=>`<div class="card"><div class="ico">${x[0]}</div><h3>${x[1]}</h3><p>${x[2]}</p></div>`).join("")
+    : `<div class="card hero" style="grid-column:1/-1"><div class="ico">📞</div><h3>Vagas e horários</h3><p>Converse com ${CONFIG.contato} para confirmar todas as informações.</p></div>`;
+}
+
+/* =====================================================================
+   Slides
+   ===================================================================== */
+let started=false, auto=false, autoTimer=null;
+const slides=$$(".slide"); let cur=0;
+const idOf = i => slides[i].dataset.id;
+slides.forEach((s,i)=>{const d=document.createElement("button");d.className="dot";d.title=s.dataset.title;d.setAttribute("aria-label","Slide "+(i+1)+": "+s.dataset.title);d.onclick=()=>{stopAuto();go(i)};$("#dots").appendChild(d)});
+function setAutoUI(){ const b=$("#autoBtn"); b.textContent = auto ? "⏸ Pausar" : "▶ Continuar"; b.classList.toggle("on",auto); }
+function stopAuto(){ auto=false; clearTimeout(autoTimer); setAutoUI(); }
+function narrate(){
+  if(!started) return;
+  clearTimeout(autoTimer); stopSpeak();
+  const id=idOf(cur);
+  const pausedSlide=slides[cur].dataset.pause;
+  say(NARR[id](),{mood:slides[cur].dataset.mood||"happy",onend:()=>{
+    if(!auto) return;
+    if(pausedSlide||cur===slides.length-1){ stopAuto(); return; }
+    autoTimer=setTimeout(()=>go(cur+1),1600);
+  }});
+}
+function go(i,quiet){
+  cur=Math.max(0,Math.min(slides.length-1,i));
+  slides.forEach((s,k)=>{s.classList.toggle("active",k===cur);s.classList.toggle("past",k<cur);s.scrollTop=0});
+  $$(".dot").forEach((d,k)=>d.classList.toggle("on",k===cur));
+  $("#progress").style.width=((cur+1)/slides.length*100)+"%";
+  $("#prev").style.visibility=cur===0?"hidden":"visible";
+  $("#next").style.visibility=cur===slides.length-1?"hidden":"visible";
+  const id=idOf(cur);
+  if(id==="fim"){ renderInfo(); if(started) setTimeout(confetti,600); }
+  if(!quiet) narrate();
+}
+$("#prev").onclick=()=>{ stopAuto(); go(cur-1) };
+$("#next").onclick=()=>{ stopAuto(); go(cur+1) };
+$("#fs").onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+document.addEventListener("keydown",e=>{
+  if(["INPUT","SELECT","TEXTAREA"].includes(e.target.tagName)) return;
+  const k=e.key, id=idOf(cur);
+  if(k==="ArrowRight"||k==="PageDown"){ stopAuto(); go(cur+1) }
+  else if(k==="ArrowLeft"||k==="PageUp"){ stopAuto(); go(cur-1) }
+  else if(k==="Home") go(0); else if(k==="End") go(slides.length-1);
+  else if(k.toLowerCase()==="f") $("#fs").click();
+  else if(k.toLowerCase()==="a"||k===" ") { e.preventDefault(); $("#autoBtn").click(); }
+});
+
+/* Controles */
+$("#autoBtn").onclick=()=>{
+  if(auto){ stopAuto(); stopSpeak(); setStatus("Pausado"); return; }
+  auto=true; setAutoUI();
+  if(cur===slides.length-1) go(0); else narrate();
+};
+$("#replayBtn").onclick=()=>narrate();
+$("#dockClose").onclick=()=>document.body.classList.remove("dock-open");
+$("#fab").onclick=()=>document.body.classList.add("dock-open");
+
+/* Clique em um robô: reação divertida (com a apresentação pausada) */
+let eggI={m:0,f:0};
+function robotClick(e){
+  const b=e.currentTarget, w=b.dataset.who;
+  b.classList.remove("hop"); void b.offsetWidth; b.classList.add("hop");
+  if(document.body.classList.contains("talking")||auto||!started) return;
+  const l=EGGS[w]; setMood("wow"); speak([[w,l[eggI[w]++%l.length]]]);
+}
+$$("#dock .bot,.hero-bot").forEach(b=>b.addEventListener("click",robotClick));
+
+/* Confete de comemoração */
+function confetti(){
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  const c=document.createElement("canvas"); c.style.cssText="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60";
+  c.width=innerWidth; c.height=innerHeight; document.body.appendChild(c);
+  const g=c.getContext("2d"), cols=["#1d4ed8","#6d28d9","#f5b301","#16a34a","#f472b6","#22d3ee"];
+  const ps=Array.from({length:140},()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.5,w:6+Math.random()*7,h:8+Math.random()*8,vy:2+Math.random()*4,vx:-1.5+Math.random()*3,r:Math.random()*6,vr:-.2+Math.random()*.4,c:cols[Math.random()*cols.length|0]}));
+  let t=0; (function f(){ g.clearRect(0,0,c.width,c.height); ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;g.save();g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;g.fillRect(-p.w/2,-p.h/2,p.w,p.h);g.restore()});
+    if(++t<230) requestAnimationFrame(f); else c.remove(); })();
+}
+
+/* =====================================================================
+   Início: um único botão. Abertura em estilo "boot" e começo automático
+   ===================================================================== */
+function applyConfig(){
+  $$(".botNameM").forEach(e=>e.textContent=CONFIG.botM);
+  $$(".botNameF").forEach(e=>e.textContent=CONFIG.botF);
+  $$(".coordName").forEach(e=>e.textContent=CONFIG.coordenador);
+  $$(".escolaName").forEach(e=>e.textContent=CONFIG.escola);
+  $$(".contatoName").forEach(e=>e.textContent=CONFIG.contato);
+}
+function begin(){
+  voiceOn=canTalk(); stopSpeak();
+  const sp=$("#splash"), boot=$("#boot"); sp.classList.add("booting"); boot.innerHTML="";
+  const L=[`> Iniciando ${SHORT.m} e ${SHORT.f} ...`,"> Vozes neurais masculina e feminina ..... OK","> Conteúdo do curso .................. OK","> Boca sincronizada com a voz ....... OK","> Sistema pronto! Vamos começar?"];
+  let k=0;
+  const tick=()=>{
+    boot.querySelectorAll(".cur").forEach(x=>x.classList.remove("cur"));
+    if(k>=L.length){ setTimeout(()=>{ sp.classList.add("hide"); sp.classList.remove("booting"); started=true;
+      if(window.innerWidth<=1000) document.body.classList.remove("dock-open");
+      auto=true; setAutoUI(); go(0); },650); return; }
+    const d=document.createElement("div"); d.className="cur"; d.textContent=L[k++]; boot.appendChild(d); setTimeout(tick,520);
+  };
+  tick();
+}
+$("#startBtn").onclick=begin;
+
+applyConfig(); renderInfo(); setMood("happy"); go(0,true); setAutoUI(); probeHuman();
+</script>
+</body>
+</html>
